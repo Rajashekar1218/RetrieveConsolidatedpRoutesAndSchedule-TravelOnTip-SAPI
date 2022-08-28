@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+     <flow name="retrievetravelontiproutesandschedule-sapi-main">
+        <http:listener path="/api/*" config-ref="retrievetravelontiproutesandschedule-sapi-httpListenerConfig">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="retrievetravelontiproutesandschedule-sapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="retrievetravelontiproutesandschedule-sapi-console">
+        <http:listener config-ref="retrievetravelontiproutesandschedule-sapi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="retrievetravelontiproutesandschedule-sapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <sub-flow name="retrievetravelontiproutesandschedule-sapiSub_Flow" doc:id="f57aea05-e55c-4363-91af-87f38ee11f3b" >
+		<ee:transform>
+            <ee:variables>
+                <ee:set-variable variableName="transportType"><![CDATA[attributes.uriParams.'transportType']]></ee:set-variable>
+                <ee:set-variable variableName="transportCompany"><![CDATA[attributes.uriParams.'transportCompany']]></ee:set-variable>
+				<ee:set-variable variableName="transactionid" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers.transactionid]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+	</sub-flow>
+	<flow name="get:\(transportType)\(transportCompany)\routes:retrievetravelontiproutesandschedule-sapi-config">
+		<flow-ref doc:name="Flow Reference" doc:id="abb48e67-f3fa-4f12-a63a-f7d74acaf8dd" name="retrievetravelontiproutesandschedule-sapiSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6099325b-5455-4772-9e01-ac2ceeefaf0c" message="Request Recieved for TravelOnTip GetRoutes Implementation For Transactionid: #[vars.transactionid]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="c89b50b8-6590-484a-bdb9-cb50e8af00ce" name="TravelOnTip-GetRoutes-ImplementationSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="368af838-a8c7-4520-ba22-78e32e77d6d4" message="Request sent from TravelOnTip GetRoutes Implementation For Transactionid: #[vars.transactionid]"/>
+    </flow>
+	<flow name="get:\(transportType)\(transportCompany)\schedules:retrievetravelontiproutesandschedule-sapi-config" doc:id="adf46984-4718-4d6b-b805-3954a2e0fa3a">
+		<flow-ref doc:name="Flow Reference" doc:id="ab611f59-8f70-464e-b8ef-7b56236863d1" name="retrievetravelontiproutesandschedule-sapiSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="8dbce997-55ef-4371-918b-3e9bd951b8ff" message="Request Recieved for TravelOnTip GetSchedules Implementation For Transactionid: #[vars.transactionid]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="a9e5a027-2343-4bdf-99c9-4194ac88a48d" name="TravelOnTip-GetSchedules-ImplementationSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b172fec9-1b4b-48d6-9461-e6216e054be2" message="Request sent from TravelOnTip GetSchedules Implementation For Transactionid: #[vars.transactionid]"/>
+    </flow>
+</mule>
